@@ -59,8 +59,11 @@ def surrogate(signal : np.ndarray, n = 10):
     return res
 
 def short_term_PCE(eeg : np.ndarray, Fs = 500,
-                   window_size : float = 0) -> list[float]:
-    step = np.floor(window_size * Fs)
+                   window_size : float = 0, overlap = 0) -> list[float]:
+    if overlap == 0:
+        step = np.floor(window_size * Fs)
+    else:
+        step = np.floor(window_size * Fs)
     n = eeg.shape[1] // step
     pce = []
     for i in range(n):
