@@ -43,7 +43,7 @@ def PCE_by_band(eeg : np.ndarray, bands : list[str] = list(freq_bands.keys()), F
 
     return PCEs
 
-def pooled_std(x : np.array, y : np.array) -> float:
+def pooled_std(x : np.ndarray, y : np.ndarray) -> float:
     var_x = np.var(x)
     var_y = np.var(y)
     n_x = len(x)
@@ -55,7 +55,7 @@ def pooled_std(x : np.array, y : np.array) -> float:
         (n_x + n_y - 2)
     )
 
-def cohen_d(x : np.array, y : np.array) -> float:
+def cohen_d(x : np.ndarray, y : np.ndarray) -> float:
     mean_x = np.mean(x)
     mean_y = np.mean(y)
     s = pooled_std(x, y)
