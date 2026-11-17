@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.fft import rfft
 import mne
 
 RANDOM_STATE = 5
@@ -31,11 +32,52 @@ def extract_band(eeg : np.ndarray, band : str, Fs = 500):
                                        verbose=False)
     return filtered
 
-def PCE_by_band(eeg : np.ndarray, bands : list[str] = list(freq_bands.keys()), Fs = 500):
+def surrogate(signal : np.ndarray, n = 10):
+    rng = np.random.default_rng(RANDOM_STATE)
+    SIGNAL = rfft(signal, axis=1)
+    magnitude = np.abs(SIGNAL)
+    res = np.zeros((n, len(signal), signal.shape[1]))
+    
+    for s in range(n):
+        random_phases = rng.uniform(
+            -np.pi, np.pi, size=SIGNAL.shape
+        )
+        random_phases[:, 0] = 0
+        # Nyquist component must also remain real for even-length signals
+        if signal.shape[1] % 2 == 0:
+            random_phases[:, -1] = 0
+
+        
+        randomized_fft = magnitude * np.exp(1j * random_phases)
+        surrogate = np.fft.irfft(
+            randomized_fft,
+            axis=1
+        )
+
+        res[s] = surrogate
+
+    return res
+
+def short_term_PCE(eeg : np.ndarray, Fs = 500,
+                   window_size : float = 0) -> list[float]:
+    step = np.floor(window_size * Fs)
+    n = eeg.shape[1] // step
+    pce = []
+    for i in range(n):
+        start = i * step
+        windowed = eeg[:, start:start+step]
+        pce.append(PCE(windowed)[0])
+    return pce
+
+def PCE_by_band(eeg : np.ndarray, bands : list[str] = list(freq_bands.keys()),
+                Fs = 500, window_size : float = 0):
     PCEs = []
     for name in bands:
         filtered = extract_band(eeg, name, Fs=Fs)
-        pce, _ = PCE(filtered)
+        if window_size > 0:
+            pce = np.mean(short_term_PCE(filtered, Fs, window_size))
+        else: 
+            pce, _ = PCE(filtered)
         PCEs.append({
             "band" : name,
             "PCE" : pce
