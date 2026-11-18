@@ -60,14 +60,14 @@ def surrogate(signal : np.ndarray, n = 10):
 
 def short_term_PCE(eeg : np.ndarray, Fs = 500,
                    window_size : float = 0, overlap = 0) -> list[float]:
-    if overlap == 0:
-        step = np.floor(window_size * Fs)
+    if overlap == 0 or overlap > window_size:
+        step = int(np.floor(window_size * Fs))
     else:
-        step = np.floor(window_size * Fs)
-    n = eeg.shape[1] // step
+        step = int(np.floor((window_size - overlap) * Fs))
+    n = int(np.floor(eeg.shape[1] // step))
     pce = []
     for i in range(n):
-        start = i * step
+        start = int(i * step)
         windowed = eeg[:, start:start+step]
         pce.append(PCE(windowed)[0])
     return pce
