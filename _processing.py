@@ -25,7 +25,7 @@ def extract_band(eeg : np.ndarray, band : str, Fs = 500):
 def decimate(signal: np.ndarray, target_Fs = 100, Fs = 500):
     w_size = int(np.floor(Fs / target_Fs))
     N_new = int(signal.shape[1] // w_size)
-    new = np.zeros(signal.shape[0], N_new)
+    new = np.zeros((signal.shape[0], N_new))
 
     for i in range(N_new-1):
         partial = signal[:, i*w_size : (i+1) * w_size]
